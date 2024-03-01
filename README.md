@@ -1,6 +1,12 @@
 # Discord Nitro Code Generator
 
-![Discord Logo](https://discord.com/assets/f8389ca1a741a115313bede9ac02e2c0.png)
+<div align="center">
+	<br />
+	<p>
+		<a href="Discord Image"><img src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6918e57475a843f59f_icon_clyde_black_RGB.svg" width="546" alt="discord" /></a>
+	</p>
+	<br />
+</div>
 
 ## Overview
 
