@@ -1,3 +1,4 @@
+# main.py
 import os
 import random
 import string
@@ -5,76 +6,43 @@ import time
 import threading
 import requests
 from discord_webhook import DiscordWebhook
+from config import api_key, webhook_url
 
 class NitroGen:
     def __init__(self):
         self.fileName = "Nitro Codes.txt"
+        self.proxies = []
         self.lock = threading.Lock()
         self.proxy_cycle = None
-        self.use_proxyscrape = self.get_user_input("Do you want to use proxyscrape API for proxies? (yes/no): ").lower() == "yes"
 
-        if self.use_proxyscrape:
-            self.proxies = self.get_proxies_from_api()
+    def get_proxies(self):
+        user_input = input("Do you want to use proxyscrape API for proxies? (yes/no): ").lower()
+        if user_input == "yes":
+            url = f"https://api.proxyscrape.com/v2/?request=getproxies&protocol=http&timeout=10000&apikey={api_key}"
+            response = requests.get(url)
+            self.proxies = response.text.split('\r\n')
         else:
-            self.proxies = self.get_proxies_from_file()
+            proxies_file = input("Enter the path to your proxies.txt file: ")
+            with open(proxies_file, 'r') as file:
+                self.proxies = file.read().split('\n')
 
-        self.use_webhook = self.get_user_input("Do you want to use a webhook for notifications? (yes/no): ").lower() == "yes"
-        self.webhook_url = self.get_webhook_url() if self.use_webhook else None
-
-        self.use_api_key = self.get_user_input("Do you want to include your API key in config.py? (yes/no): ").lower() == "yes"
-        if self.use_api_key:
-            self.api_key = self.get_api_key_from_user()
-            self.save_api_key_to_config()
-
-    def get_proxies_from_api(self):
-        api_key = self.get_api_key()
-        url = f"https://api.proxyscrape.com/v2/?request=getproxies&protocol=http&timeout=10000&apikey={api_key}"
-        response = requests.get(url)
-        proxies = response.text.split('\r\n')
-        return proxies[:100]  # Taking only the first 100 proxies
-
-    def get_proxies_from_file(self):
-        proxies_file_path = "proxies.txt"
-        if os.path.exists(proxies_file_path):
-            with open(proxies_file_path, "r") as file:
-                proxies = file.read().splitlines()
-            return proxies
-        else:
-            print("Proxies file not found. Exiting.")
-            exit()
-
-    def get_api_key_from_user(self):
-        return input("Enter your API key: ")
-
-    def get_api_key(self):
-        if self.use_api_key:
-            return self.api_key
-        else:
-            return input("Enter your API key: ")
-
-    def get_webhook_url(self):
-        return input("Enter your webhook URL: ")
-
-    def get_user_input(self, question):
-        return input(question)
-
-    def save_api_key_to_config(self):
-        with open("config.py", "w") as config_file:
-            config_file.write(f"api_key = \"{self.api_key}\"")
+        self.proxy_cycle = iter(self.proxies)
 
     def main(self):
         os.system('cls' if os.name == 'nt' else 'clear')
 
-        print(""" GEN V2
+        print(""" GEN V1, Made with love for all discord users without Discord Nitro
                                                         """)
         time.sleep(2)
-        self.slowType("Made by: AngerminecraftY", .02)
+        self.slowType("Enjoy this!", .02)
         print()
         self.slowType(
-            "This gen Is NOT An Open source If You Want To Get The Code Contact Me!",
+            "This generator is solely made for educational purposes. I am not responsible for what you do with it. Good luck with your codes!",
             .02)
 
         time.sleep(1)
+        self.get_proxies()
+
         num = int(input('\nInput How Many Codes to Generate and Check: '))
 
         print()
@@ -83,11 +51,9 @@ class NitroGen:
         invalid = 0
         webhook_message = ""
 
-        self.proxy_cycle = iter(self.proxies)
-
         threads = []
 
-        for i in range(0, num, 5):
+        for i in range(0, num, 5):  # Incrementamos de 5 en 5
             thread = threading.Thread(target=self.generate_and_check,
                                       args=(i, min(i + 5, num), valid, invalid))
             threads.append(thread)
@@ -103,13 +69,12 @@ Results:
  Valid Codes: {', '.join(valid)}
 """
 
-        if self.use_webhook:
-            DiscordWebhook(url=self.webhook_url, content=webhook_message).execute()
+        DiscordWebhook(url=webhook_url, content=webhook_message).execute()
 
         print(webhook_message)
 
         input(
-            "\nSuccessfully Generated Nitro Codes! Press Enter 5 times to close the program. Or Refresh The Page to use the gen again"
+            "\nSuccessfully Generated Nitro Codes! Press Enter 5 times to close the program,n"
         )
         [input(i) for i in range(4, 0, -1)]
 
@@ -138,7 +103,9 @@ Results:
 
             time.sleep(1)
 
-            if (i + 1) % 10000 == 0:
+            if (
+                    i + 1
+            ) % 10000 == 0:  # Cambia el número para ajustar la frecuencia de actualización
                 with self.lock:
                     self.send_webhook_update(valid, invalid, i + 1)
 
@@ -157,8 +124,7 @@ Update:
  Invalid: {invalid}
 """
 
-        if self.use_webhook:
-            DiscordWebhook(url=self.webhook_url, content=webhook_message).execute()
+        DiscordWebhook(url=webhook_url, content=webhook_message).execute()
 
         print(webhook_message)
 
